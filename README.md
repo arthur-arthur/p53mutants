@@ -37,7 +37,11 @@ The aforementioned procedures relied strongly on manual supervision to find low-
 
 # Class balancing
 
-Based on the preprocessed and dimension-reduced dataset, we further tested the added value of slight upsampling of the "active" (minority) class using random upsampling, but also through artificially constructing new instances using Synthetic Minority OverSampling (SMOTE), [@chawla2002], Adaptive synthetic sampling (ADASYN) [@haibohe2008] and SVM-based SMOTE (SVMSMOTE) [@nguyen2011]. The SVMSMOTE algorithm was found to perform best for this dataset, with optimal resampled class ratios being 0.01 (RF pipeline, Fig S6), 0.1 (LR pipeline) and 0.2 (NN classifier). Further class balancing through downsampling of the majority class was found to reduce performance. In addition, we also evaluated how cost-sensitive learning (CSL) (i.e. tuning the relative cost of misclassifying minority class instances during training) affected classification performance.
+Based on the preprocessed and dimension-reduced dataset, we further tested the added value of slight upsampling of the "active" (minority) class using random upsampling, but also through artificially constructing new instances using Synthetic Minority OverSampling (SMOTE) (Chawla et al., 2002), Adaptive synthetic sampling (ADASYN) (Haibohe et al., 2008) and SVM-based SMOTE (SVMSMOTE) (Nguyen et al., 2011). The SVMSMOTE algorithm was found to perform best for this dataset, with optimal resampled class ratios being 0.01 (RF pipeline, Fig 6), 0.1 (LR pipeline) and 0.2 (NN classifier). Further class balancing through downsampling of the majority class was found to reduce performance. In addition, we also evaluated how cost-sensitive learning (CSL) (i.e. tuning the relative cost of misclassifying minority class instances during training) affected classification performance.
+
+![](figs/rfc_resampling-1.jpg)  
+*Figure 6. Effects of different resampling-strategies on validation-fold MCC of a downstream RFC (with cost-sensitive learning). Different upsampling algorithms and class ratio's were evaluated, as well as the additional effect of random downsampling of the majority class by a factor 1 (i.e. no downsampling, left) to 2 (i.e. doubling the upsampling class ratio, right). The black line indicates baseline validation-fold MCC (i.e. no resampling). In contrast to the effects of resampling on the other pipelines (data not shown), the effects were limited, i.e. only minor upsampling (SVMSMOTE) to a class ratio of 0.01 was found to improve validation-fold MCC (left). Lines and ribbons represent LOESS-smoothed averages with 95% confidence levels, respectively.*
+
 
 # Optimization
 
@@ -46,7 +50,6 @@ Lastly, all pipelines were optimized in terms of the hyperparameters of the clas
 # Results
 
 For each classifier, 4 different pipelines (with and without resampling and/or CSL) were refitted on the entire training set (model-specific hyperparameters were the same for the different pipelines) and extra-sample performance was estimated using the held-out test set. To illustrate the added value of the optimization procedures, all classifiers were also fitted on the raw dataset. An overview of the results given in Fig 1 and Table 1. For the LR models (Fig 1A-B), preprocessing and dimension-reduction clearly improved performance for all 4 different class-balancing strategies (Fig 1A). This was different for the RFC: while optimization of the preprocessing pipeline improved the validation-fold MCC from ~0.5 to ~0.6 (data not shown), this was not reflected in the estimated performance (Fig 1C), suggesting that the optimization procedure resulted in overfitting of the training set. The NN outperformed the other models (Fig 1E-F), with the pipelines based on resampling correctly classifying 22/30 active proteins in the test set at a relatively low false positive rate (Fig 1F). Lastly, a soft-voting ensemble model was constructed from the 3 classifiers (no resampling, CSL (Table 1, 4th row)), this improved performance further as compared to the NN model: estimated precision was slightly lower (0.72 vs 0.73), but sensitivity increased from 0.73 to 0.77 and both the F1-score and the MCC increased from 0.73 to 0.74.
-
 
 ![Precision-recall curves (A, C, E) comparing the effects of resampling (RS) with SVMSMOTE and/or cost-sensitive learning (CSL) for the logistic regression (A-B), random forest (C-D) and neural network (E-F) classifiers. Baseline precision-recall curves (i.e. no preprocessing) for each classifier are indicated in blue. The confusion matrices (B, D, F) indicate absolute counts of test set instances as well as the column-wise proportions in color. \label{evalNN}](Results/figs/eval.pdf)
 
@@ -93,9 +96,6 @@ All optimization and model training steps were performed in Jupyter notebooks us
 ### Ensemble model
 
 `Ensemble_model`: Soft-voting classifier based on the LR, RFC and NN classifiers (CSL, no resampling)
-
-![Effects of different resampling-strategies on validation-fold MCC of a downstream RFC (with cost-sensitive learning). Different upsampling algorithms and class ratio's were evaluated, as well as the additional effect of random downsampling of the majority class by a factor 1 (i.e. no downsampling, left) to 2 (i.e. doubling the upsampling class ratio, right). The black line indicates baseline validation-fold MCC (i.e. no resampling). In contrast to the effects of resampling on the other pipelines (data not shown), the effects were limited, i.e. only minor upsampling (SVMSMOTE) to a class ratio of 0.01 was found to improve validation-fold MCC (left). Lines and ribbons represent LOESS-smoothed averages with 95% confidence levels, respectively. \label{pp}](Results/2__Resampling/RFC/rfc_resampling.pdf)
-
 
 # References
 
