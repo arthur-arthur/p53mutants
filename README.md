@@ -61,6 +61,7 @@ For each classifier, 4 different pipelines (with and without resampling and/or C
 | No RS - No CSL 	| 0.58 	| 0.63 	| 0.60 	| 0.60 	| 0.57 	| 0.13 	| 0.22 	| 0.27 	| 0.68 	| 0.70 	| 0.69 	| 0.69  	|
 | No RS - CSL    	| 0.50 	| 0.77 	| 0.60 	| 0.61 	| 0.52 	| 0.57 	| 0.54 	| 0.54 	| 0.73 	| 0.73 	| 0.73 	| 0.73  	|
 | Baseline       	| 0.39 	| 0.63 	| 0.48 	| 0.49 	| 0.67 	| 0.13 	| 0.22 	| 0.30 	| 0.65 	| 0.50 	| 0.57 	| 0.57  	|  
+
 *Table 1. Extra-sample precision (Pr), recall (Re), F1-score (F1) and Matthews Correlation coefficient (MCC) as computed using the held-out test-set for the logistic regression (LR), random forest (RF) and neural network (NN) classifiers.*
 
 # Discussion
