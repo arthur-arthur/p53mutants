@@ -2,12 +2,12 @@
 
 The [p53 mutants dataset](https://archive.ics.uci.edu/ml/datasets/p53+Mutants) consists of 31420 mutant p53 proteins with a total of 5408 numeric features, as well as their experimentally determined tumor suppression activities. The goal of this project was to predict the activity of a protein given these numeric features. The primary challenges specific to this dataset were the dimensionality of the feature space as well as the class imbalance: the "active" class contained only 151 instances (~ 0.5 %). Three different classifiers were used: a logistic regression (LR) model, a random forest (RF) classifier and a neural network (NN).
 
-Optimization of the LR and RF pipelines was performed in 3 consecutive steps (Fig 1).
+Optimization of the LR and RF pipelines was performed in 3 consecutive steps (Fig 1). All source code as well as the results of the different optimization and cross-validation steps (as `.csv` files) are included in this repository, as specified below.
 
 ![](figs/protocol_overview.png)
 *Figure 2. Schematic overview of the workflow to optimize a prediction model for p53 mutant protein activity classification. Details are given below.*
 
-First, preprocessing and dimension-reduction was performed. Then, the dimension-reduced dataset was used to evaluate how (direct and indirect) class-balancing strategies affected performance. Lastly, the classifier itself was optimized in terms of its hyperparameters and the extra-sample performance was estimated using the held-out test set (obtained from a stratified 80/20 split). Optimization of each step was done in terms of the downstream classification performance (4-fold CV on the training set). To facilitate efficient iteration over different algorithms and hyperparameters, the Matthews Correlation Coefficient (MCC)) was used. Furthermore, for the initial optimization steps, the majority class was randomly downsampled and the downstream classifier was jointly optimized for performance but as well as efficiency.
+First, preprocessing and dimension-reduction was performed. Then, the dimension-reduced dataset was used to evaluate how (direct and indirect) class-balancing strategies affected performance. Lastly, the classifier itself was optimized in terms of its hyperparameters and the extra-sample performance was estimated using the held-out test set (obtained from a stratified 80/20 split). Optimization of each step was done in terms of the downstream classification performance (4-fold CV on the training set). To facilitate efficient iteration over different algorithms and hyperparameters, the Matthews Correlation Coefficient (MCC)) was used (Chicco et al., 2020). Furthermore, for the initial optimization steps, the majority class was randomly downsampled and the downstream classifier was jointly optimized for performance but as well as efficiency.
 
 # Data cleaning and exploration
 
@@ -23,7 +23,15 @@ To explore the class separability in the (transformed) feature space, we created
 
 # Dimension reduction
 
-Studies have reported that combining different feature selection methods that rely on different statistical assumptions (if any) can improve results of classification algorithms [@mares2016; @pohjalainen2015]. Hence, different univariate parametric and non-parametric selection criteria (F-score & Mutual Information Criterion [@baldi2000]) as well as model-based feature selection methods were evaluated. The added value of supplementing the reduced feature space with principal components (PCs) of the original dataset was evaluated as well. For the LR pipeline, this approach showed to improve downstream classification performance as compared to baseline when the variables were centered and scaled to unit variance prior to selecting a subset of ~500-1000 features based on a linear Support Vector Classifier (SVC) (fig S4), supplemented with a low number of PCs (Fig S5). Further finetuning resulted in a pipeline that outputted a 1024-dimensional data matrix, consisting of both original features (selected by model-based and univariate criteria) and PCs. Additional dimension-reduction through hierarchical or K-Means clustering was evaluated as well but found to reduce downstream performance. While the approach for the RF classifier was methodologically similar, optimal performance in terms of validation fold MCC was achieved with a much more stringent feature selection procedure, resulting in a subset of 145 features. This also included the *ad hoc* removal of "redundant" features based on their correlation with other features (the optimal exclusion threshold of 250 features was determined by 4-fold CV with a custom transformer class (`RemoveCorrelatedFeatures`)).
+Combining different feature selection methods that rely on different statistical assumptions (if any) can improve results of classification algorithms (Mares et al., 2016, Pojalainen et al., 2015). Hence, different univariate parametric and non-parametric selection criteria (F-score & Mutual Information Criterion (Baldi et al., 2000)) as well as model-based feature selection methods were evaluated. The added value of supplementing the reduced feature space with principal components (PCs) of the original dataset was evaluated as well. For the LR pipeline, this approach showed to improve downstream classification performance as compared to baseline when the variables were centered and scaled to unit variance prior to selecting a subset of ~500-1000 features based on a linear Support Vector Classifier (SVC) (Fig 4), supplemented with a low number of PCs (Fig 5). 
+
+![](figs/dimred-1.jpg)  
+*Figure 4. Overview of the effects of different preprocessing and feature-selection steps on the classication performance of a standard logistic regression (LR) classifier in terms of Matthews Correlation Coefficient (MCC). Already from the inclusion of 500-1000 features, the LR model fitted the training set perfectly, suggesting that the generalizability of the LR model might benefit from regularization strategies. Optimal validation fold performance appeared to be in the range 500-1000 features. Feature selection with a linear SVC and scaling with sklearn's StandardScaler class resulted in the best downstream performance. Baseline performance (i.e. without preprocessing (PP)) is indicated by the grey line. Lines and ribbons represent LOESS-smoothed averages with 95% confidence levels, respectively.*
+
+![](figs/lr_pp-1.jpg)  
+*Figure 5. A finer grid search based on the results in Fig 3 showed the effects of the univariate criterium (F-score) threshold (k) and the linear SVC-based feature selection threshold (m) on the validation set MCC (variables were centered and scaled to unit variance). The different panels show the effect of supplementing no (left) up to 100 (right) principal components to the dimension-reduced dataset. Lines and ribbons represent LOESS-smoothed averages with 95% confidence levels, respectively.*
+
+Further finetuning resulted in a pipeline that outputted a 1024-dimensional data matrix, consisting of both original features (selected by model-based and univariate criteria) and PCs. Additional dimension-reduction through hierarchical or K-Means clustering was evaluated as well but found to reduce downstream performance. While the approach for the RF classifier was methodologically similar, optimal performance in terms of validation fold MCC was achieved with a much more stringent feature selection procedure, resulting in a subset of 145 features. This also included the *ad hoc* removal of "redundant" features based on their correlation with other features (the optimal exclusion threshold of 250 features was determined by 4-fold CV with a custom transformer class (`RemoveCorrelatedFeatures`)).
 
 The aforementioned procedures relied strongly on manual supervision to find low-dimensional representations that maximized downstream classification performance. For the thirth classifier, manual optimization of the preprocessing steps was limited to variable scaling and clipping. By using a single hidden layer NN classifier with a limited number of hidden units (256), the model was implicetely forced to learn a (non-linear) 256-dimensional representation of the data matrix that maximized performance of the prediction task.
 
@@ -48,17 +56,6 @@ For this project, we developed a linear (LR) and 2 non-linear (RFC and NN) class
 
 Both resampling with the SVMSMOTE algorithm and CSL were found to improve performance, but there was no obvious advantage of either resampling or CSL (or both). The optimal (resampled) class ratio's or class weights were found to be different between models, with the RF pipeline benefitting the least from SVMSMOTE upsampling. This might be partly caused by the fact that the stringent dimension-reduction step resulted in the removal of information that could have been relevant for the SVMSMOTE algorithm to generate artificial instances. Random downsampling was shown to consistently reduce downstream performance for all models, suggesting that the benefit of further reducing class imbalance didn't compensate for the associated information loss. Overall, estimated performance was highest for the NN classifier, and further improved by a soft-voting ensemble of all three classifiers. However, it should be noted that one should be cautious interpreting these points estimates of the extra-sample performance. Even though they are unbiased, the low number of "active" proteins in the test set might render them imprecise.
 
-\pagebreak
-
-<div id="refs">
-# References
-
-</div>
-
-\pagebreak
-
-\beginsupplement
-
 # Supplementary material
 
 ## Overview of workflow and description of the attached files
@@ -67,11 +64,11 @@ All optimization and model training steps were performed in Jupyter notebooks us
 
 ### Exploratory Data Analysis (EDA)
 
-`0__EDA`: EDA, cleaning and visualizations (PCA, LDA, tSNE) of the entire dataset (Fig S2, Fig S3).
+`0__EDA`: EDA, cleaning and visualizations (PCA, LDA, tSNE) of the entire dataset.
 
 ### Logistic Regression and Random Forest Classifier
 
-`1__LRC/RFC__DimRed_A`: Initial evaluation of different preprocessing pipelines, especially w.r.t. dimension-reduction (Fig S4, S5).
+`1__LRC/RFC__DimRed_A`: Initial evaluation of different preprocessing pipelines, especially w.r.t. dimension-reduction (Fig 4-5).
 	
 `1__LRC/RFC__DimRed_B`:	Finer grid search over the previously identified best-performing preprocessing pipelines.
 	
@@ -97,15 +94,20 @@ All optimization and model training steps were performed in Jupyter notebooks us
 
 `Ensemble_model`: Soft-voting classifier based on the LR, RFC and NN classifiers (CSL, no resampling)
 
-\pagebreak
-
-## Supplementary figures
-
-
-
-
-![Overview of the effects of different preprocessing and feature-selection steps on the classication performance of a standard logistic regression (LR) classifier in terms of Matthews Correlation Coefficient (MCC). Already from the inclusion of 500-1000 features, the LR model fitted the training set perfectly, suggesting that the generalizability of the LR model might benefit from regularization strategies. Optimal validation fold performance appeared to be in the range 500-1000 features. Feature selection with a linear SVC and scaling with sklearn's StandardScaler class resulted in the best downstream performance. Baseline performance (i.e. without preprocessing (PP)) is indicated by the grey line. Lines and ribbons represent LOESS-smoothed averages with 95% confidence levels, respectively. \label{pp}](Results/1__DimRed/LRC/A/dimred.pdf)
-
-![A finer grid search based on the results in Fig S3 showed the effects of the univariate criterium (F-score) threshold (k) and the linear SVC-based feature selection threshold (m) on the validation set MCC (variables were centered and scaled to unit variance). The different panels show the effect of supplementing no (left) up to 100 (right) principal components to the dimension-reduced dataset. Lines and ribbons represent LOESS-smoothed averages with 95% confidence levels, respectively. \label{pp}](Results/1__DimRed/LRC/A/lr_pp.pdf)
-
 ![Effects of different resampling-strategies on validation-fold MCC of a downstream RFC (with cost-sensitive learning). Different upsampling algorithms and class ratio's were evaluated, as well as the additional effect of random downsampling of the majority class by a factor 1 (i.e. no downsampling, left) to 2 (i.e. doubling the upsampling class ratio, right). The black line indicates baseline validation-fold MCC (i.e. no resampling). In contrast to the effects of resampling on the other pipelines (data not shown), the effects were limited, i.e. only minor upsampling (SVMSMOTE) to a class ratio of 0.01 was found to improve validation-fold MCC (left). Lines and ribbons represent LOESS-smoothed averages with 95% confidence levels, respectively. \label{pp}](Results/2__Resampling/RFC/rfc_resampling.pdf)
+
+
+# References
+
+Baldi, P., S. Brunak, Y. Chauvin, C. A. F. Andersen, and H. Nielsen. 2000. “Assessing the Accuracy of Prediction Algorithms for Classification: An Overview.” Bioinformatics 16 (5): 412–24.
+
+Chawla, N. V., K. W. Bowyer, L. O. Hall, and W. P. Kegelmeyer. 2002. “SMOTE: Synthetic Minority over-Sampling Technique.” Journal of Artificial Intelligence Research 16 (June): 321–57
+
+Chicco, Davide, and Giuseppe Jurman. 2020. “The Advantages of the Matthews Correlation Coefficient (MCC) over F1 Score and Accuracy in Binary Classification Evaluation.” BMC Genomics 21 (1): 6.
+
+He, Haibo, Yang Bai, Edwardo A. Garcia, and Shutao Li. 2008. “ADASYN: Adaptive Synthetic Sam- pling Approach for Imbalanced Learning.” In 2008 IEEE International Joint Conference on Neural Net- works (IEEE World Congress on Computational Intelligence), 1322–8.
+
+Mares, Mihaela A, Shicai Wang, and Yike Guo. 2016. “Combining Multiple Feature Selection Methods and Deep Learning for High-Dimensional Data,” 19.
+Nguyen, Hien M., Eric W. Cooper, and Katsuari Kamei. 2011. “Borderline over-Sampling for Imbalanced Data Classification.” International Journal of Knowledge Engineering and Soft Data Paradigms 3 (1): 4.
+
+Pohjalainen, Jouni, Okko Räsänen, and Serdar Kadioglu. 2015. “Feature Selection Methods and Their Combinations in High-Dimensional Classification of Speaker Likability, Intelligibility and Personality Traits.” Computer Speech and Language 29 (1). Academic Press Inc.: 145–71.
