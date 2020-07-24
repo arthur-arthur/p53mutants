@@ -53,6 +53,16 @@ For each classifier, 4 different pipelines (with and without resampling and/or C
 ![](figs/results_panel-1.jpg)  
 *Figure 7. Precision-recall curves (A, C, E) comparing the effects of resampling (RS) with SVMSMOTE and/or cost-sensitive learning (CSL) for the logistic regression (A-B), random forest (C-D) and neural network (E-F) classifiers. Baseline precision-recall curves (i.e. no preprocessing) for each classifier are indicated in blue. The confusion matrices (B, D, F) indicate absolute counts of test set instances as well as the column-wise proportions in color.*
 
+| Model          	| LR   	| LR   	| LR   	| LR   	| RF   	| RF   	| RF   	| RF   	| NN   	| NN   	| NN   	| NN    	|
+|----------------	|------	|------	|------	|------	|------	|------	|------	|------	|------	|------	|------	|-------	|
+| Metric         	| Pr   	| Re   	| F1   	| MCC  	| Pr   	| Re   	| F1   	| MCC  	| Pr   	| Re   	| F1   	| MCC   	|
+| RS - No CSL    	| 0.54 	| 0.78 	| 0.63 	| 0.64 	| 0.50 	| 0.30 	| 0.37 	| 0.39 	| 0.73 	| 0.73 	| 0.73 	| 0.737 	|
+| RS - CSL       	| 0.43 	| 0.87 	| 0.58 	| 0.61 	| 0.48 	| 0.67 	| 0.56 	| 0.56 	| 0.63 	| 0.73 	| 0.68 	| 0.68  	|
+| No RS - No CSL 	| 0.58 	| 0.63 	| 0.60 	| 0.60 	| 0.57 	| 0.13 	| 0.22 	| 0.27 	| 0.68 	| 0.70 	| 0.69 	| 0.69  	|
+| No RS - CSL    	| 0.50 	| 0.77 	| 0.60 	| 0.61 	| 0.52 	| 0.57 	| 0.54 	| 0.54 	| 0.73 	| 0.73 	| 0.73 	| 0.73  	|
+| Baseline       	| 0.39 	| 0.63 	| 0.48 	| 0.49 	| 0.67 	| 0.13 	| 0.22 	| 0.30 	| 0.65 	| 0.50 	| 0.57 	| 0.57  	|
+*Table 1. Extra-sample precision (Pr), recall (Re), F1-score (F1) and Matthews Correlation coefficient (MCC) as computed using the held-out test-set for the logistic regression (LR), random forest (RF) and neural network (NN) classifiers.*
+
 # Discussion
 
 For this project, we developed a linear (LR) and 2 non-linear (RFC and NN) classifiers. The main challenges specific to this dataset were the dimensionality of the feature space and the class imbalance. These were addressed in a stepwise manner. Dimension-reduction was based on univariate, model-based and *ad hoc* feature redundancy (based on bivariate linear correlations) criteria. In addition, a non-linear low-dimensional representation of the feature space was obtained by directly optimizing w.r.t. the binary cross-entropy loss of the NN. Dimension reduction for the RFC resulted in a 145-dimensional subset (vs. 1024-dimensions for the LR). Even though the estimated performance of the former was relatively poor, this might be important when interpretability is important or when data acquisition is costly. All pipelines were optimized in terms of the MCC. While a single evaluation metric is intrinsically limited in terms of representing all different aspects of model performance, it does facilitate fast and efficient iteration over different preprocessing algorithms to guide the search towards a (local) optimum (in terms of the MCC) in algorithm space. When a practical application of the model specifically requires e.g. a high sensitivity or specificity, optimizing the pipeline in terms of this relevant metric might be preferred.
@@ -61,7 +71,7 @@ Both resampling with the SVMSMOTE algorithm and CSL were found to improve perfor
 
 ## Overview of workflow and description of the attached files
 
-All optimization and model training steps were performed in Jupyter notebooks using the cloud computational environments (4 CPU cores, 16 Gb RAM) provided by Kaggle^[https://www.kaggle.com/]. Relevant output was stored as csv-files and analyzed locally in R (source code attached as `p53_output.R` and `helper_functions.R`). Code that was repetitively used in different Kaggle notebooks (data loading, cleaning, splitting, custom transformer classess, etc.) is included in the `p53_helper_functions.py` file. Some of the notebooks were executed multiple times with different parameter grids. To avoid repetition, only a single version of the notebook was included, together with all output of the different runs as csv-files. A brief description about each notebook is given below.
+All optimization and model training steps were performed in Jupyter notebooks using the cloud computational environments (4 CPU cores, 16 Gb RAM) provided by [Kaggle](https://www.kaggle.com/). Relevant output was stored as csv-files and analyzed locally in R (source code attached as `p53_output.R` and `helper_functions.R`). Code that was repetitively used in different Kaggle notebooks (data loading, cleaning, splitting, custom transformer classess, etc.) is included in the `p53_helper_functions.py` file. Some of the notebooks were executed multiple times with different parameter grids. To avoid repetition, only a single version of the notebook was included, together with all output of the different runs as csv-files. A brief description about each notebook is given below.
 
 ### Exploratory Data Analysis (EDA)
 
