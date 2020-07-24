@@ -6,11 +6,15 @@ Optimization of the LR and RF pipelines was performed in 3 consecutive steps (Fi
 
 ![Schematic overview of the workflow to optimize a prediction model for p53 mutant protein activity classification. Details are given in the text.](Figures/protocol_overview.png)
 
-First, preprocessing and dimension-reduction was performed. Then, the dimension-reduced dataset was used to evaluate how (direct and indirect) class-balancing strategies affected performance. Lastly, the classifier itself was optimized in terms of its hyperparameters and the extra-sample performance was estimated using the held-out test set (obtained from a stratified 80/20 split). Optimization of each step was done in terms of the downstream classification performance (4-fold CV on the training set). To facilitate efficient iteration over different algorithms and hyperparameters, a single evaluation metric (the Matthews Correlation Coefficient (MCC))^[The MCC was used instead of the in the protocol proposed F1-score because it is a well-interpretable and informative evaluation metric that addresses some of the F1-score-related concerns that have been raised by some researchers [@chicco2020]] was used. Furthermore, for the initial optimization steps, the majority class was randomly downsampled and the downstream classifier was jointly optimized for performance but as well as efficiency.
+First, preprocessing and dimension-reduction was performed. Then, the dimension-reduced dataset was used to evaluate how (direct and indirect) class-balancing strategies affected performance. Lastly, the classifier itself was optimized in terms of its hyperparameters and the extra-sample performance was estimated using the held-out test set (obtained from a stratified 80/20 split). Optimization of each step was done in terms of the downstream classification performance (4-fold CV on the training set). To facilitate efficient iteration over different algorithms and hyperparameters, the Matthews Correlation Coefficient (MCC)) was used. Furthermore, for the initial optimization steps, the majority class was randomly downsampled and the downstream classifier was jointly optimized for performance but as well as efficiency.
 
 # Data cleaning and exploration
 
-A total of 261 cases (all beloning to the majority class) lacked data for at least ~90% of the features and were removed. The presence of strong bivariate (linear) correlations between some feature pairs (Fig S2) further supported the hypothesis that final classification performance might benefit from feature selection or aggregation steps. To explore the class separability in the (transformed) feature space, we created different visualisations based on principal components analysis (PCA) (Fig S3, left), linear discriminant analysis (LDA) and t-stochastic neighbor embedding (t-SNE). Even though, unsurprisingly, class separation was not obvious in the low-dimensional mappings of the dataset, 2- or 3D mappings of a specific subset (i.e. the 3D distance features) (Fig S3, right) and supervised dimension reduction with LDA did provide indications that the features encoded information that allowed to (at least partly) seperate class labels (Fig S3).
+A total of 261 cases (all beloning to the majority class) lacked data for at least ~90% of the features and were removed. The presence of strong bivariate (linear) correlations between some feature pairs further supported the hypothesis that final classification performance might benefit from feature selection or aggregation steps. 
+
+![Exploratory visualizations indicate strong bivariate linear correlations between some feature pairs. The majority class (blue) was downsampled to improve clarity.](figs/EDA_a-1.jpg)
+
+To explore the class separability in the (transformed) feature space, we created different visualisations based on principal components analysis (PCA) (Fig S3, left), linear discriminant analysis (LDA) and t-stochastic neighbor embedding (t-SNE). Even though, unsurprisingly, class separation was not obvious in the low-dimensional mappings of the dataset, 2- or 3D mappings of a specific subset (i.e. the 3D distance features) (Fig S3, right) and supervised dimension reduction with LDA did provide indications that the features encoded information that allowed to (at least partly) seperate class labels (Fig S3).
 
 # Dimension reduction
 
@@ -30,42 +34,6 @@ Lastly, all pipelines were optimized in terms of the hyperparameters of the clas
 
 For each classifier, 4 different pipelines (with and without resampling and/or CSL) were refitted on the entire training set (model-specific hyperparameters were the same for the different pipelines) and extra-sample performance was estimated using the held-out test set. To illustrate the added value of the optimization procedures, all classifiers were also fitted on the raw dataset. An overview of the results given in Fig 1 and Table 1. For the LR models (Fig 1A-B), preprocessing and dimension-reduction clearly improved performance for all 4 different class-balancing strategies (Fig 1A). This was different for the RFC: while optimization of the preprocessing pipeline improved the validation-fold MCC from ~0.5 to ~0.6 (data not shown), this was not reflected in the estimated performance (Fig 1C), suggesting that the optimization procedure resulted in overfitting of the training set. The NN outperformed the other models (Fig 1E-F), with the pipelines based on resampling correctly classifying 22/30 active proteins in the test set at a relatively low false positive rate (Fig 1F). Lastly, a soft-voting ensemble model was constructed from the 3 classifiers (no resampling, CSL (Table 1, 4th row)), this improved performance further as compared to the NN model: estimated precision was slightly lower (0.72 vs 0.73), but sensitivity increased from 0.73 to 0.77 and both the F1-score and the MCC increased from 0.73 to 0.74.
 
-```{r, echo=FALSE, message=FALSE, warning=FALSE}
-library(kableExtra)
-
-cat <- c("RS - No CSL", "RS - CSL", "No RS - No CSL", "No RS - CSL", "Baseline")
-
-LRC <- read_csv("Results/4__Eval/LRC/LRC_eval.csv") %>%
-  select(-(tn:tp), -X1, -accuracy, -balanced_accuracy, -aucpr)
-
-LRC$name <- cat
-LRC$model <- "LR"
-
-RFC <- read_csv("Results/4__Eval/RFC/RFC_eval.csv") %>% 
-  select(-(tn:tp), -X1, -accuracy, -balanced_accuracy, -aucpr)
-
-RFC$name <- cat
-RFC$model <- "RF"
-
-NN <- read_csv("Results/NN/3__Eval/NN_eval.csv") %>%
-  select(-(tn:tp), -X1, -accuracy, -balanced_accuracy, -aucpr)
-
-NN$name <- cat
-NN$model <- "NN"
-
-df <- rbind(LRC, RFC, NN) %>%
-  pivot_wider(names_from = model, 
-              values_from = precision:mcc) %>%
-  select(name, ends_with("LR"), ends_with("RF"), ends_with("NN"))
-
-kable(df, 
-      caption = "Overview of the estimated extra-sample precision (Pr), sensitivity (Se), F1-score, Matthews Correlation Coefficient (MCC) for the pipelines based on resampling (RS) and/or cost-sensitive learning (CSL) for the logistic regression (LR), random forest (RF) and neural network (NN) classifiers discussed in the text.",
-      col.names = c(" ", rep(c("Pr", "Se", "F1", "MCC"), 3)),
-      format = "latex", digits = 2,
-      booktabs=TRUE) %>%
-  kable_styling() %>%
-  add_header_above(c(" ", "LR" = 4, "RF"= 4, "NN" = 4))
-```
 
 ![Precision-recall curves (A, C, E) comparing the effects of resampling (RS) with SVMSMOTE and/or cost-sensitive learning (CSL) for the logistic regression (A-B), random forest (C-D) and neural network (E-F) classifiers. Baseline precision-recall curves (i.e. no preprocessing) for each classifier are indicated in blue. The confusion matrices (B, D, F) indicate absolute counts of test set instances as well as the column-wise proportions in color. \label{evalNN}](Results/figs/eval.pdf)
 
