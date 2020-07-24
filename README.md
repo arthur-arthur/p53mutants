@@ -1,20 +1,25 @@
 # Predicting the tumor suppression activity of p53 mutant proteins
 
-The p53 mutants dataset consists of 31420 mutant p53 proteins with a total of 5408 numeric features, as well as their experimentally determined tumor suppression activities. The goal of this project was to predict the activity of a protein given these numeric features. The primary challenges specific to this dataset were the dimensionality of the feature space as well as the class imbalance: the "active" class contained only 151 instances (~ 0.5 %). Three different classifiers were used: a logistic regression (LR) model, a random forest (RF) classifier and a neural network (NN).
+The [p53 mutants dataset](https://archive.ics.uci.edu/ml/datasets/p53+Mutants) consists of 31420 mutant p53 proteins with a total of 5408 numeric features, as well as their experimentally determined tumor suppression activities. The goal of this project was to predict the activity of a protein given these numeric features. The primary challenges specific to this dataset were the dimensionality of the feature space as well as the class imbalance: the "active" class contained only 151 instances (~ 0.5 %). Three different classifiers were used: a logistic regression (LR) model, a random forest (RF) classifier and a neural network (NN).
 
-Optimization of the LR and RF pipelines was performed in 3 consecutive steps (Fig S1). 
+Optimization of the LR and RF pipelines was performed in 3 consecutive steps (Fig 1).
 
-![Schematic overview of the workflow to optimize a prediction model for p53 mutant protein activity classification. Details are given in the text.](figs/protocol_overview.png =100x50)
+![](figs/protocol_overview.png)
+*Figure 2. Schematic overview of the workflow to optimize a prediction model for p53 mutant protein activity classification. Details are given below.*
 
 First, preprocessing and dimension-reduction was performed. Then, the dimension-reduced dataset was used to evaluate how (direct and indirect) class-balancing strategies affected performance. Lastly, the classifier itself was optimized in terms of its hyperparameters and the extra-sample performance was estimated using the held-out test set (obtained from a stratified 80/20 split). Optimization of each step was done in terms of the downstream classification performance (4-fold CV on the training set). To facilitate efficient iteration over different algorithms and hyperparameters, the Matthews Correlation Coefficient (MCC)) was used. Furthermore, for the initial optimization steps, the majority class was randomly downsampled and the downstream classifier was jointly optimized for performance but as well as efficiency.
 
 # Data cleaning and exploration
 
-A total of 261 cases (all beloning to the majority class) lacked data for at least ~90% of the features and were removed. The presence of strong bivariate (linear) correlations between some feature pairs further supported the hypothesis that final classification performance might benefit from feature selection or aggregation steps. 
+A total of 261 cases (all beloning to the majority class) lacked data for at least ~90% of the features and were removed. The presence of strong bivariate (linear) correlations between some feature pairs (Fig 2) further supported the hypothesis that final classification performance might benefit from feature selection or aggregation steps. 
 
-![Exploratory visualizations indicate strong bivariate linear correlations between some feature pairs. The majority class (blue) was downsampled to improve clarity.](figs/EDA_a-1.jpg)
+![](figs/EDA_a-1.jpg)  
+*Figure 2. Exploratory visualizations indicate strong bivariate linear correlations between some feature pairs. The majority class (blue) was downsampled to improve clarity.*
 
-To explore the class separability in the (transformed) feature space, we created different visualisations based on principal components analysis (PCA) (Fig S3, left), linear discriminant analysis (LDA) and t-stochastic neighbor embedding (t-SNE). Even though, unsurprisingly, class separation was not obvious in the low-dimensional mappings of the dataset, 2- or 3D mappings of a specific subset (i.e. the 3D distance features) (Fig S3, right) and supervised dimension reduction with LDA did provide indications that the features encoded information that allowed to (at least partly) seperate class labels (Fig S3).
+To explore the class separability in the (transformed) feature space, we created different visualisations based on principal components analysis (PCA) (Fig 3, left), linear discriminant analysis (LDA) and t-stochastic neighbor embedding (t-SNE). Even though, unsurprisingly, class separation was not obvious in the low-dimensional mappings of the dataset, 2- or 3D mappings of a specific subset (i.e. the 3D distance features) (Fig 3, right) and supervised dimension reduction with LDA did provide indications that the features encoded information that allowed to (at least partly) seperate class labels.
+
+![](figs/pca-1.jpg)  
+*Figure 3. The first three principal components (PCs) of the entire data matrix explain only 20 % of total variance and provide no clear indications of (linear) class separability in the dimension-reduced space (left). The first 3 PCs of a subset containing features 4827-5408 (3D distance measures with clearly different univariate distributions) explain 41 % of total variance in the non-dimension-reduced feature subset and demonstrate slightly more pronounced clustering of the classess in the dimension-reduced space (right). The majority class (blue) was downsampled to improve clarity.*  
 
 # Dimension reduction
 
@@ -98,9 +103,6 @@ All optimization and model training steps were performed in Jupyter notebooks us
 
 
 
-![Exploratory visualizations indicate strong bivariate linear correlations between some feature pairs. The majority class (blue) was downsampled to improve clarity. \label{EDA}](Results/0__EDA/EDA_a.pdf)
-
-![The first three principal components (PCs) of the entire data matrix explain only 20 % of total variance and provide no clear indications of (linear) class separability in the dimension-reduced space (left). The first 3 PCs of a subset containing features 4827-5408 (3D distance measures with clearly different univariate distributions) explain 41 % of total variance in the non-dimension-reduced feature subset and demonstrate slightly more pronounced clustering of the classess in the dimension-reduced space (right). The majority class (blue) was downsampled to improve clarity. \label{PCA}](Results/0__EDA/pca.pdf)
 
 ![Overview of the effects of different preprocessing and feature-selection steps on the classication performance of a standard logistic regression (LR) classifier in terms of Matthews Correlation Coefficient (MCC). Already from the inclusion of 500-1000 features, the LR model fitted the training set perfectly, suggesting that the generalizability of the LR model might benefit from regularization strategies. Optimal validation fold performance appeared to be in the range 500-1000 features. Feature selection with a linear SVC and scaling with sklearn's StandardScaler class resulted in the best downstream performance. Baseline performance (i.e. without preprocessing (PP)) is indicated by the grey line. Lines and ribbons represent LOESS-smoothed averages with 95% confidence levels, respectively. \label{pp}](Results/1__DimRed/LRC/A/dimred.pdf)
 
