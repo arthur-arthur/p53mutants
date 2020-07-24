@@ -44,7 +44,7 @@ Based on the preprocessed and dimension-reduced dataset, we further tested the a
 
 # Optimization
 
-Lastly, all pipelines were optimized in terms of the hyperparameters of the classifier, including the class weight parameter for CSL (cf supra). This resulted in a regularizated LR model (Ridge penalty term, $\lambda$ = 1), a random forest with 500 trees with a maximum depth of 15 and a NN consisting of a single hidden layer (256 units) with a ReLu nonlinearity, a dropout layer (p=0.5) and a single unit output layer with a sigmoid activation function to produce probability outputs. Training of the NN involved mini-batch gradient descent (Adam optimizer with $\alpha=0.001$) with batches of 4096 instances to ensure that each mini-batch contained "active" instances. The bias was initialized at $log(N_a/N_i)$ with $N_a$ and $N_i$ the number of instances from the active and inactive class, respectively.
+Lastly, all pipelines were optimized in terms of the hyperparameters of the classifier, including the class weight parameter for CSL (cf supra). This resulted in a regularizated LR model (Ridge penalty term, `lambda = 1`), a random forest with 500 trees with a maximum depth of 15 and a NN consisting of a single hidden layer (256 units) with a ReLu nonlinearity, a dropout layer (p=0.5) and a single unit output layer with a sigmoid activation function to produce probability outputs. Training of the NN involved mini-batch gradient descent (Adam optimizer with `alpha=0.001`) with batches of 4096 instances to ensure that each mini-batch contained "active" instances. The bias was initialized at `log(N_a/N_i)` with `N_a` and `N_i` the number of instances from the active and inactive class, respectively.
 
 # Results
 
