@@ -53,7 +53,7 @@ For each classifier, 4 different pipelines (with and without resampling and/or C
 ![](figs/results_panel-1.jpg)  
 *Figure 7. Precision-recall curves (A, C, E) comparing the effects of resampling (RS) with SVMSMOTE and/or cost-sensitive learning (CSL) for the logistic regression (A-B), random forest (C-D) and neural network (E-F) classifiers. Baseline precision-recall curves (i.e. no preprocessing) for each classifier are indicated in blue. The confusion matrices (B, D, F) indicate absolute counts of test set instances as well as the column-wise proportions in color.*
 
-| Model          	| LR   	| LR   	| LR   	| LR   	| RF   	| RF   	| RF   	| RF   	| NN   	| NN   	| NN   	| NN    	|
+|               	| LR   	| LR   	| LR   	| LR   	| RF   	| RF   	| RF   	| RF   	| NN   	| NN   	| NN   	| NN    	|
 |----------------	|------	|------	|------	|------	|------	|------	|------	|------	|------	|------	|------	|-------	|
 | Metric         	| Pr   	| Re   	| F1   	| MCC  	| Pr   	| Re   	| F1   	| MCC  	| Pr   	| Re   	| F1   	| MCC   	|
 | RS - No CSL    	| 0.54 	| 0.78 	| 0.63 	| 0.64 	| 0.50 	| 0.30 	| 0.37 	| 0.39 	| 0.73 	| 0.73 	| 0.73 	| 0.737 	|
