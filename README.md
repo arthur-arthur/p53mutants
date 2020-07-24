@@ -4,7 +4,7 @@ The p53 mutants dataset consists of 31420 mutant p53 proteins with a total of 54
 
 Optimization of the LR and RF pipelines was performed in 3 consecutive steps (Fig S1). 
 
-![Schematic overview of the workflow to optimize a prediction model for p53 mutant protein activity classification. Details are given in the text. \label{overview}](Results/figs/protocol_overview.png)
+![Schematic overview of the workflow to optimize a prediction model for p53 mutant protein activity classification. Details are given in the text. \label{overview}](Figures/protocol_overview.png)
 
 First, preprocessing and dimension-reduction was performed. Then, the dimension-reduced dataset was used to evaluate how (direct and indirect) class-balancing strategies affected performance. Lastly, the classifier itself was optimized in terms of its hyperparameters and the extra-sample performance was estimated using the held-out test set (obtained from a stratified 80/20 split). Optimization of each step was done in terms of the downstream classification performance (4-fold CV on the training set). To facilitate efficient iteration over different algorithms and hyperparameters, a single evaluation metric (the Matthews Correlation Coefficient (MCC))^[The MCC was used instead of the in the protocol proposed F1-score because it is a well-interpretable and informative evaluation metric that addresses some of the F1-score-related concerns that have been raised by some researchers [@chicco2020]] was used. Furthermore, for the initial optimization steps, the majority class was randomly downsampled and the downstream classifier was jointly optimized for performance but as well as efficiency.
 
